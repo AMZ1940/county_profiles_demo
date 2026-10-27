@@ -7,15 +7,25 @@ on:
       - 'data/**'
       - 'templates/**'
       - 'scripts/generate_profiles.py'
+      - 'docs/**'
       - '.github/workflows/refresh-profiles.yml'
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: county-profile-pages
+  cancel-in-progress: true
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -38,3 +48,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Refresh generated county profiles"
           git push
+      - name: Prepare GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload the product
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+      - name: Publish the product
+        id: deployment
+        uses: actions/deploy-pages@v4

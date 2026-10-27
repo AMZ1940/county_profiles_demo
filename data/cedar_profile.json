@@ -1,0 +1,59 @@
+{
+  "county": "Cedar Demo County",
+  "state": "Cedar State",
+  "as_of": "2026-01-01",
+  "description": "A fictional county profile for practicing emergency management data and publishing workflows.",
+  "state_facts": {"population": 1280000, "households": 493000, "median_household_income": 61500},
+  "indicators": [
+    {"label": "People under 5", "county": 7.1, "state": 5.9, "note": "Share of all residents"},
+    {"label": "People age 65 and older", "county": 19.4, "state": 16.8, "note": "Share of all residents"},
+    {"label": "People of color, including Hispanic", "county": 32.0, "state": 27.0, "note": "Share of all residents"},
+    {"label": "Limited English proficiency", "county": 4.8, "state": 3.2, "note": "Share of residents age 5+"},
+    {"label": "Adults without high school diploma", "county": 13.2, "state": 10.4, "note": "Share of adults age 25+"},
+    {"label": "Families in poverty", "county": 14.1, "state": 10.0, "note": "Share of families"},
+    {"label": "Renter occupied homes", "county": 39.0, "state": 32.0, "note": "Share of occupied homes"},
+    {"label": "Households without a vehicle", "county": 8.2, "state": 5.1, "note": "Share of households"},
+    {"label": "People with a disability", "county": 17.8, "state": 14.3, "note": "Share of civilian noninstitutionalized residents"},
+    {"label": "People without health insurance", "county": 12.1, "state": 9.4, "note": "Share of residents under 65"}
+  ],
+  "zones": [
+    {"name": "Northwest", "score": 27, "population": 880},
+    {"name": "North Center", "score": 31, "population": 1100},
+    {"name": "Northeast", "score": 19, "population": 960},
+    {"name": "West Ridge", "score": 36, "population": 1010},
+    {"name": "Cedar Center", "score": 44, "population": 1690},
+    {"name": "East Center", "score": 35, "population": 1150},
+    {"name": "Southwest", "score": 23, "population": 840},
+    {"name": "South Center", "score": 40, "population": 1360},
+    {"name": "Southeast", "score": 29, "population": 1030},
+    {"name": "Far West", "score": 20, "population": 790},
+    {"name": "River Bend", "score": 42, "population": 1060},
+    {"name": "Far East", "score": 25, "population": 830}
+  ],
+  "disasters": [
+    {"year": 2019, "type": "Severe storm and straight-line wind", "duration_days": 3, "impact": "42 homes damaged; 11 road closures; 4-day power interruption in two zones.", "pa": 950000, "ia": 250000},
+    {"year": 2021, "type": "River flooding", "duration_days": 12, "impact": "310 homes affected; water plant access disrupted; 28 miles of roads damaged.", "pa": 2900000, "ia": 800000},
+    {"year": 2023, "type": "Tornado outbreak", "duration_days": 2, "impact": "145 structures damaged; 2 shelters opened; debris removal lasted 19 days.", "pa": 2450000, "ia": 650000},
+    {"year": 2025, "type": "Winter storm and ice", "duration_days": 7, "impact": "32% of customers lost power; 6 bridges closed; 3 warming centers opened.", "pa": 2100000, "ia": 450000}
+  ],
+  "pa_categories": [
+    {"code": "A", "name": "Debris removal", "amount": 1800000},
+    {"code": "B", "name": "Emergency protective measures", "amount": 2400000},
+    {"code": "C", "name": "Roads and bridges", "amount": 1150000},
+    {"code": "E", "name": "Public buildings", "amount": 1600000},
+    {"code": "F", "name": "Utilities", "amount": 1100000},
+    {"code": "G", "name": "Parks and recreation", "amount": 350000}
+  ],
+  "grants": [
+    {"name": "Hazard Mitigation Grant Program", "short": "HMGP", "year": 2022, "amount": 1600000, "purpose": "Elevate flood-prone homes and acquire repetitive-loss parcels."},
+    {"name": "Building Resilient Infrastructure and Communities", "short": "BRIC", "year": 2024, "amount": 2100000, "purpose": "Drainage upgrades and backup power for the water plant."},
+    {"name": "Emergency Management Performance Grant", "short": "EMPG", "year": 2025, "amount": 500000, "purpose": "Planning, exercises, and emergency operations center equipment."}
+  ],
+  "hazards": [
+    {"type": "River flooding", "score": 72, "likelihood": "High", "driver": "Floodplain exposure and two recent high-water events"},
+    {"type": "Tornado / severe wind", "score": 65, "likelihood": "High", "driver": "Open terrain and historic wind damage"},
+    {"type": "Extreme heat", "score": 58, "likelihood": "Moderate", "driver": "Older residents and limited cooling access"},
+    {"type": "Winter storm", "score": 46, "likelihood": "Moderate", "driver": "Power and road network sensitivity"},
+    {"type": "Wildfire", "score": 29, "likelihood": "Low", "driver": "Limited modeled wildland exposure"}
+  ]
+}

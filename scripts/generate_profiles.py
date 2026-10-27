@@ -1,9 +1,10 @@
-"""Build county Markdown profiles from two CSV files and a template."""
+"""Build the fictional county profiles and Cedar's browser dashboard."""
 
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import re
 from pathlib import Path
 
@@ -107,7 +108,37 @@ def generate(root: Path) -> list[Path]:
     links = "\n".join(f"- [{row['county']}](profiles/{slugify(row['county'])}.md)" for row in sorted(counties, key=lambda r: r["county"].casefold()))
     index = f"{MARKER}\n\n# County profiles\n\nThese profiles are generated from the sample CSV files. All names and numbers are fictional.\n\n{links}\n"
     write_if_changed(root / "docs" / "index.md", index)
+    build_cedar_dashboard(root, by_name)
     return created
+
+
+def build_cedar_dashboard(root: Path, counties: dict[str, dict[str, str]]) -> None:
+    """Write a standalone browser page from the same source files."""
+    path = root / "data" / "cedar_profile.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    key = data["county"].casefold()
+    if key not in counties:
+        raise ValueError("The dashboard county must exist in counties.csv")
+    data["facts"] = {
+        field: positive_whole_number(counties[key][field], field, data["county"])
+        for field in ("population", "households", "median_household_income")
+    }
+    if len(data["zones"]) != 12:
+        raise ValueError("The schematic heat map needs exactly 12 zones")
+    pa_events = sum(event["pa"] for event in data["disasters"])
+    pa_categories = sum(category["amount"] for category in data["pa_categories"])
+    if pa_events != pa_categories:
+        raise ValueError("PA dollars by event and category must match")
+    for row in data["indicators"]:
+        if not (0 <= row["county"] <= 100 and 0 <= row["state"] <= 100):
+            raise ValueError("Indicator percentages must be between 0 and 100")
+    for row in data["hazards"]:
+        if not 0 <= row["score"] <= 100:
+            raise ValueError("Hazard scores must be between 0 and 100")
+    template = (root / "templates" / "cedar_dashboard.html").read_text(encoding="utf-8")
+    # Keep source text from closing the inline script if future data contains HTML.
+    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    write_if_changed(root / "docs" / "index.html", template.replace("__PROFILE_JSON__", payload))
 
 
 if __name__ == "__main__":

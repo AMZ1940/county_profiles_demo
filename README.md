@@ -1,23 +1,25 @@
-# County Profile Demo
+# Cedar Demo County resilience profile
 
-This is a separate practice project. It does not connect to or change the RESL board.
+This is a separate practice project. It does not connect to or change the RESL board. The expanded browser product is `docs/index.html`; double-click it to see the current page on your computer.
 
-The two CSV files in `data/` are the source information. The template in `templates/` controls the document layout. `scripts/generate_profiles.py` combines them to create one Markdown profile per county in `docs/profiles/` plus an index in `docs/`.
+`data/counties.csv` supplies Cedar's general figures. `data/cedar_profile.json` supplies its fictional state comparison, support-needs indicators, heat-map zones, disaster history, awards, grants, and hazard scores. `scripts/generate_profiles.py` combines them into the browser page and plain Markdown profiles.
 
-**All county names and numbers here are fictional demonstration data.** Replace them with verified information and source notes before using any profile for real decisions.
+**All county names, state figures, disasters, awards, grants, map zones, and risk scores are fictional demonstration data.** The reference image is an example of the indicator layout, not a data source. The heat map is a diagram, not real geography. The risk scores are illustrative planning priorities, not event probabilities.
 
 ## Try it on your computer
 
-1. Extract the ZIP to a permanent folder, such as `Documents/GitHub/County_Profile_Demo`.
-2. In GitHub Desktop, select **File > Add local repository** and choose that folder. It is already initialized as a separate Git repository and has no connection to RESL.
-3. Open `data/counties.csv` in a text editor or spreadsheet application. Change the population for one demo county and save it as CSV.
-4. If Python 3 is installed, open a terminal in the project folder and run `python scripts/generate_profiles.py`. Open the matching file in `docs/profiles/` to see the new value.
-5. In GitHub Desktop, review the changed CSV and generated Markdown files. Enter a commit message such as `Update demo county population`, then commit.
-6. Select **Publish repository** in GitHub Desktop. Keep it private while experimenting if you prefer. The first publication sends the practice project to your GitHub account.
+1. Open `docs/index.html` to see the expanded Cedar profile in your browser. It uses the fictional data already in this repository.
+2. Your prior commit changed Cedar's population in `data/counties.csv` to **12,700**. I ran the generator so the browser page and Markdown profile now show that number.
+3. For later edits, change a source file and run `python scripts/generate_profiles.py` (or `py scripts/generate_profiles.py` on some Windows installations). Refresh the browser tab to see the result.
+4. In GitHub Desktop, review the source and generated files, commit them, and push when ready.
+
+The browser page includes general stats, county versus made-up state charts, a schematic heat map, a disaster timeline, PA/IA award graphics, grants, and an illustrative future hazard index. If Python is not installed locally, the GitHub workflow can run it after you publish and push the repository.
 
 ## See the automatic refresh
 
-After publishing, edit either CSV file and commit and push it with GitHub Desktop. The workflow in `.github/workflows/refresh-profiles.yml` runs on GitHub, rebuilds the profile documents, and commits any changed documents back to the same repository. In GitHub, open the **Actions** tab to see the run. Then use **Fetch origin** and **Pull origin** in GitHub Desktop to bring the generated document changes back to your computer before your next edit.
+With GitHub Free, a GitHub Pages site needs a **public** repository. Before publishing, review the practice data; public repositories are visible to everyone. In GitHub Desktop, click **Publish repository** and choose public visibility if you want the browser page online. In your repository on GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**. If the first workflow run happened before Pages was enabled, open **Actions → Refresh county profiles → Run workflow** to run it again. When the run finishes, the Pages settings show the live website link.
+
+For later edits, change an input file, commit and **Push origin** in GitHub Desktop. The workflow in `.github/workflows/refresh-profiles.yml` regenerates the profile and publishes the website. Refresh the live page in your browser to see the change. Use **Fetch origin** and **Pull origin** in GitHub Desktop to bring any generated file changes back to your computer.
 
 The workflow needs permission to write repository contents. It requests that permission in its own configuration, though organization or repository rules can still restrict it. A protected `main` branch may also prevent an automatic commit; this demo assumes a new personal test repository without branch protection.
 
@@ -25,10 +27,12 @@ The workflow needs permission to write repository contents. It requests that per
 
 - Add or update county figures in `data/counties.csv`.
 - Add or update service listings in `data/services.csv`.
+- Edit Cedar's state comparisons, indicators, zones, events, PA categories, grants, and hazard scores in `data/cedar_profile.json`.
+- Edit the browser page in `templates/cedar_dashboard.html`, `docs/assets/dashboard.css`, and `docs/assets/dashboard.js`.
 - Change the wording or layout in `templates/profile.md`.
 - Change validation or formatting rules in `scripts/generate_profiles.py`.
 
-The output files in `docs/` are generated. To refresh them, change the inputs or template and run the generator, or push those changes to GitHub and let the workflow run.
+The Markdown profiles and `docs/index.html` are generated. To refresh them, change the inputs or template and run the generator, or push those changes to GitHub and let the workflow run. The generator checks that PA dollars by event equal PA dollars by category and that indicator percentages and hazard scores are within 0–100.
 
 The same pattern can later read verified Excel exports, ArcGIS exports, or other structured files. That would require mapping the real fields and agreeing on which sources and update dates belong in each profile.
 
@@ -37,3 +41,4 @@ The same pattern can later read verified Excel exports, ArcGIS exports, or other
 - [Add an existing local repository in GitHub Desktop](https://docs.github.com/en/desktop/adding-and-cloning-repositories/adding-a-repository-from-your-local-computer-to-github-desktop)
 - [Publish an existing project with GitHub Desktop](https://docs.github.com/en/desktop/adding-and-cloning-repositories/adding-an-existing-project-to-github-using-github-desktop)
 - [View a GitHub Actions run](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/monitoring-workflows/viewing-workflow-run-history)
+- [Configure GitHub Pages with Actions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)

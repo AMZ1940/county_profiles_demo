@@ -2,7 +2,7 @@
 
 # Pine Demo County
 
-Data as of **2026-01-01**. Source: Fictional demo dataset.
+Data as of **1/1/2026**. Source: Fictional demo dataset.
 
 ## At a glance
 
