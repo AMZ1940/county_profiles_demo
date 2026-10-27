@@ -29,7 +29,7 @@
   const above = [...d.indicators].sort((a,b) => (b.county-b.state) - (a.county-a.state)).slice(0,3);
   byId('indicator-insights').innerHTML = above.map(row => `<div class="insight-item"><strong>+${(row.county-row.state).toFixed(1)} pp</strong><span>${esc(row.label)} in the county compared with ${esc(d.state)}</span></div>`).join('');
 
-  const heatColors = ['#d1e8d7','#abdabf','#80c6bc','#52a9ac','#258a9a','#1d6985'];
+  const heatColors = ['#fff1ef','#ffd7d2','#f7a99f','#e97068','#c83b43','#8e1b2c'];
   byId('heat-grid').innerHTML = d.zones.map(zone => {
     const level = Math.max(0, Math.min(5, Math.floor((zone.score - 18) / 5)));
     const light = level < 4;
