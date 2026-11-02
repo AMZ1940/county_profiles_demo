@@ -1,6 +1,7 @@
 /*
- * ArcGIS OAuth 2.0 + PKCE for the Cedar practice profile.
- * Pattern adapted from RESL_Kanban/src/auth.js:
+ * ArcGIS OAuth 2.0 + PKCE sign-in gate for the Cedar practice profile.
+ * County profile data stays in the published website; ArcGIS is used only
+ * to sign in. Pattern adapted from RESL_Kanban/src/auth.js:
  *   - standalone page: authorization-code redirect and callback exchange
  *   - embedded page: popup authorization, then post the code to the parent
  *   - keep the short-lived access token and refresh it when needed
@@ -13,8 +14,6 @@
   const CLIENT_ID = 'hN0QCOV06sz2er5f';
   const AUTHORIZE_URL = 'https://www.arcgis.com/sharing/rest/oauth2/authorize';
   const TOKEN_URL = 'https://www.arcgis.com/sharing/rest/oauth2/token';
-  const DATA_PORTAL = 'https://tnema.maps.arcgis.com';
-  const ITEM_ID = '0441cfa9730046399811c27c309214ce';
   const TOKEN_KEY = 'county_profile_arcgis_token_v1';
   const VERIFIER_KEY = 'county_profile_oauth_verifier';
   const STATE_KEY = 'county_profile_oauth_state';
@@ -22,10 +21,13 @@
   const REDIRECT_URI = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
   const CALLBACK_MESSAGE = 'county_profile_oauth_callback';
 
-  const profile = window.PROFILE_DATA;
   const gate = document.getElementById('arcgis-gate');
   const status = document.getElementById('arcgis-status');
   const signInButton = document.getElementById('arcgis-sign-in');
+  const description = gate.querySelector('p:not(#arcgis-status)');
+  if (description) {
+    description.textContent = 'Sign in with your ArcGIS account to view the county profile. Practice data is supplied by this website.';
+  }
   let token = null;
   let dashboardStarted = false;
 
@@ -151,104 +153,11 @@
     return (await refreshToken()).accessToken;
   }
 
-  function parseCsv(text) {
-    const rows = [];
-    let row = [], cell = '', quoted = false;
-    for (let i = 0; i < text.length; i += 1) {
-      const ch = text[i];
-      if (ch === '"' && quoted && text[i + 1] === '"') { cell += '"'; i += 1; }
-      else if (ch === '"') quoted = !quoted;
-      else if (ch === ',' && !quoted) { row.push(cell); cell = ''; }
-      else if ((ch === '\n' || ch === '\r') && !quoted) {
-        if (ch === '\r' && text[i + 1] === '\n') i += 1;
-        row.push(cell); cell = '';
-        if (row.some(value => value !== '')) rows.push(row);
-        row = [];
-      } else cell += ch;
-    }
-    row.push(cell);
-    if (row.some(value => value !== '')) rows.push(row);
-    if (rows.length < 2) return [];
-    const headers = rows.shift().map(value => value.replace(/^\uFEFF/, '').trim());
-    return rows.map(values => Object.fromEntries(headers.map((header, index) => [header, values[index] || ''])));
-  }
-
-  const normalize = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  function findField(row, names) {
-    for (const name of names) {
-      const match = Object.entries(row).find(([key]) => normalize(key) === normalize(name));
-      if (match && match[1] !== '') return match[1];
-    }
-    return undefined;
-  }
-
-  async function requestJson(url, accessToken) {
-    const separator = url.includes('?') ? '&' : '?';
-    const response = await fetch(`${url}${separator}f=json&token=${encodeURIComponent(accessToken)}`);
-    if (!response.ok) throw new Error(`ArcGIS returned HTTP ${response.status}.`);
-    const result = await response.json();
-    if (result.error) throw new Error(result.error.message || 'ArcGIS could not return the requested data.');
-    return result;
-  }
-
-  async function readRows(item, accessToken) {
-    if (item.type === 'CSV') {
-      const url = `${DATA_PORTAL}/sharing/rest/content/items/${ITEM_ID}/data?token=${encodeURIComponent(accessToken)}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Could not download the ArcGIS CSV (HTTP ${response.status}).`);
-      return parseCsv(await response.text());
-    }
-    if (!item.url || !/Feature Service|Feature Layer|Table/i.test(item.type || '')) {
-      throw new Error(`This ArcGIS item is “${item.type || 'unknown type'}”. Use a CSV item or publish it as a hosted feature layer/table.`);
-    }
-    let layerUrl = item.url.replace(/\/$/, '');
-    if (!/\/(FeatureServer|MapServer)\/\d+$/i.test(layerUrl)) {
-      const service = await requestJson(layerUrl, accessToken);
-      const layer = (service.layers || [])[0] || (service.tables || [])[0];
-      if (!layer) throw new Error('The ArcGIS service has no readable layer or table.');
-      layerUrl += `/${layer.id}`;
-    }
-    const query = new URLSearchParams({ where: '1=1', outFields: '*', returnGeometry: 'false', resultRecordCount: '2000', f: 'json', token: accessToken });
-    const response = await fetch(`${layerUrl}/query?${query.toString()}`);
-    if (!response.ok) throw new Error(`Could not read the ArcGIS table (HTTP ${response.status}).`);
-    const result = await response.json();
-    if (result.error) throw new Error(result.error.message || 'ArcGIS could not return county records.');
-    return (result.features || []).map(feature => feature.attributes || {});
-  }
-
-  function selectCountyRow(rows) {
-    if (!rows.length) throw new Error('The ArcGIS item returned no county rows.');
-    const countyFields = ['county', 'county_name', 'name', 'geography', 'namelsad'];
-    const wanted = normalize(profile.county);
-    const found = rows.find(row => normalize(findField(row, countyFields)) === wanted);
-    if (found) return found;
-    if (rows.length === 1) return rows[0];
-    throw new Error(`The table has ${rows.length} rows but none matches “${profile.county}”. Match the profile county name or limit the ArcGIS item to one county.`);
-  }
-
-  function mergeFacts(row) {
-    const fields = {
-      population: ['population', 'total_population', 'pop_total', 'popestimate', 'b01003_001e'],
-      households: ['households', 'total_households', 'household_count', 'b11001_001e'],
-      median_household_income: ['median_household_income', 'median_income', 'med_hh_income', 'b19013_001e']
-    };
-    let count = 0;
-    for (const [target, names] of Object.entries(fields)) {
-      const raw = findField(row, names);
-      if (raw === undefined) continue;
-      const value = Number(String(raw).replace(/[$,%\s,]/g, ''));
-      if (Number.isFinite(value)) { profile.facts[target] = value; count += 1; }
-    }
-    if (!count) throw new Error(`County row found, but no population, households, or median income field matched. ArcGIS fields: ${Object.keys(row).join(', ')}.`);
-  }
-
   async function loadDashboard() {
     if (dashboardStarted) return;
     dashboardStarted = true;
-    say('Loading county facts from ArcGIS…');
-    const accessToken = await validAccessToken();
-    const item = await requestJson(`${DATA_PORTAL}/sharing/rest/content/items/${ITEM_ID}`, accessToken);
-    mergeFacts(selectCountyRow(await readRows(item, accessToken)));
+    say('ArcGIS sign-in complete. Loading the county profile…');
+    await validAccessToken();
 
     const renderer = document.createElement('script');
     renderer.src = 'assets/dashboard.js';
@@ -379,10 +288,10 @@
       catch (error) {
         dashboardStarted = false;
         signInButton.disabled = false;
-        say(`${error.message || 'Could not load the county profile.'} Check your ArcGIS item access and field names.`, true);
+        say(`${error.message || 'Could not load the county profile.'} The profile data is read from the website, not from ArcGIS.`, true);
       }
     } else {
-      say('Sign in with your ArcGIS account to load the county facts.');
+      say('Sign in with your ArcGIS account to view the county profile.');
     }
   }
 
