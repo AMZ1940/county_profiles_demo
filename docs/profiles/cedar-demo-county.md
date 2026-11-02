@@ -19,4 +19,4 @@ Data as of **1/1/2026**. Source: Fictional demo dataset.
 
 ---
 
-This profile is generated from `data/counties.csv` and `data/services.csv`. The values in this demo are fictional.
+This profile is generated from `data/counties.csv` and `data/services.csv`. The values in this practice project are fictional.
