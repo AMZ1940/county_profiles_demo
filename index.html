@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>County Emergency Management Profile (Demo)</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============ SIGN-IN GATE ============ -->
+  <div id="gate" class="gate">
+    <div class="gate-card">
+      <div class="gate-badge">EM</div>
+      <h1>County Emergency Management Profiles</h1>
+      <p>This demo is restricted to users with an ArcGIS account in your organization.</p>
+      <button id="btnSignIn" class="btn btn-primary" disabled>Checking sign-in…</button>
+      <p id="gateMsg" class="gate-msg"></p>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app" class="app" hidden>
+    <header class="topbar no-print">
+      <div class="topbar-left">
+        <span class="logo">EM</span>
+        <span class="topbar-title">County Profiles</span>
+      </div>
+      <div class="topbar-right">
+        <span id="userName" class="user"></span>
+        <button id="btnPdf" class="btn btn-primary">Download PDF</button>
+        <button id="btnSignOut" class="btn btn-ghost">Sign out</button>
+      </div>
+    </header>
+
+    <main id="profile" class="profile">
+
+      <div class="demo-banner">Fictional demonstration data — not a real county, state, disaster or award.</div>
+
+      <!-- Title -->
+      <section class="hero">
+        <div>
+          <p class="eyebrow" id="heroRegion"></p>
+          <h1 id="heroName"></h1>
+          <p class="hero-sub" id="heroSub"></p>
+        </div>
+        <div class="hero-risk">
+          <div class="hero-risk-label">Overall risk index</div>
+          <div class="hero-risk-score" id="heroRisk"></div>
+          <div class="hero-risk-rating" id="heroRiskRating"></div>
+          <div class="hero-risk-state" id="heroRiskState"></div>
+        </div>
+      </section>
+
+      <!-- Summary KPIs -->
+      <section class="kpi-row" id="summaryKpis"></section>
+
+      <!-- 1. General -->
+      <section class="section" id="sec-general">
+        <h2><span class="num">1</span>General profile</h2>
+        <div class="grid kpi-grid" id="generalKpis"></div>
+        <div class="grid g3">
+          <div class="card"><h3>Population growth since 2000</h3><p class="sub">Indexed, 2000 = 100</p><div class="chart h240"><canvas id="chPop"></canvas></div></div>
+          <div class="card"><h3>Age distribution</h3><p class="sub">% of population</p><div class="chart h240"><canvas id="chAge"></canvas></div></div>
+          <div class="card"><h3>Housing stock by type</h3><p class="sub">% of housing units, county</p><div class="chart h240"><canvas id="chHousing"></canvas></div></div>
+        </div>
+      </section>
+
+      <!-- 2. Vulnerable populations -->
+      <section class="section" id="sec-vuln">
+        <h2><span class="num">2</span>Vulnerable population indicators</h2>
+        <div class="grid g-2-1">
+          <div class="card"><h3>County vs. state</h3><p class="sub">% of persons, households or housing units</p><div class="chart h420"><canvas id="chVuln"></canvas></div></div>
+          <div class="card">
+            <h3>Social vulnerability index</h3><p class="sub">0 = least vulnerable · 1 = most vulnerable</p>
+            <div class="chart h180"><canvas id="chSvi"></canvas></div>
+            <div class="svi-readout" id="sviReadout"></div>
+            <div class="people-counts" id="peopleCounts"></div>
+          </div>
+        </div>
+        <div class="grid g3" id="waffles"></div>
+        <div class="card map-card">
+          <div class="map-head">
+            <div><h3>Heat map of vulnerable populations</h3><p class="sub">Density of residents in the selected group, by census block (synthetic)</p></div>
+            <div class="map-controls no-print">
+              <label>Indicator
+                <select id="mapIndicator">
+                  <option value="composite">Composite vulnerability</option>
+                  <option value="age65">Age 65+</option>
+                  <option value="disability">Living with a disability</option>
+                  <option value="poverty">Below poverty</option>
+                  <option value="novehicle">No vehicle</option>
+                  <option value="nobroadband">No broadband</option>
+                  <option value="mobilehome">Mobile-home residents</option>
+                </select>
+              </label>
+              <label class="chk"><input type="checkbox" id="mapFacilities" checked> Critical facilities</label>
+            </div>
+          </div>
+          <div class="map-wrap">
+            <div id="mapView" class="map"></div>
+            <img id="mapSnapshot" class="map-snapshot" alt="Heat map snapshot" hidden>
+          </div>
+          <div class="map-legend">
+            <span class="ramp-label">Lower</span><span class="ramp"></span><span class="ramp-label">Higher concentration</span>
+            <span class="lg-item"><i class="dot hosp"></i>Hospital / dialysis</span>
+            <span class="lg-item"><i class="dot nurse"></i>Nursing / assisted living</span>
+            <span class="lg-item"><i class="dot shelter"></i>Shelter</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Disaster history -->
+      <section class="section" id="sec-history">
+        <h2><span class="num">3</span>Disaster history</h2>
+        <div class="grid kpi-grid" id="historyKpis"></div>
+        <div class="card"><h3>Major disaster declarations, 2010–present</h3><div class="timeline" id="timeline"></div></div>
+        <div class="grid g-2-1">
+          <div class="card"><h3>Federal assistance by disaster</h3><p class="sub">Public Assistance + Individual Assistance, $ millions</p><div class="chart h300"><canvas id="chByDisaster"></canvas></div></div>
+          <div class="card"><h3>Declarations by hazard type</h3><p class="sub">Count, 2010–present</p><div class="chart h300"><canvas id="chTypes"></canvas></div></div>
+        </div>
+        <div class="grid g2">
+          <div class="card"><h3>Declarations per period</h3><p class="sub">County vs. average county in state</p><div class="chart h240"><canvas id="chDeclPeriods"></canvas></div></div>
+          <div class="card"><h3>Homes damaged or destroyed</h3><p class="sub">By disaster</p><div class="chart h240"><canvas id="chHomes"></canvas></div></div>
+        </div>
+        <div class="card table-card">
+          <h3>Declaration detail</h3>
+          <div class="table-wrap"><table class="tbl" id="tblDisasters"></table></div>
+        </div>
+      </section>
+
+      <!-- 4. Public Assistance -->
+      <section class="section" id="sec-pa">
+        <h2><span class="num">4</span>Public Assistance (PA)</h2>
+        <div class="grid kpi-grid" id="paKpis"></div>
+        <div class="grid g2">
+          <div class="card"><h3>PA obligated by category</h3><p class="sub">Federal share, all declarations, $ millions</p><div class="chart h300"><canvas id="chPaCat"></canvas></div></div>
+          <div class="card"><h3>Category mix: county vs. state</h3><p class="sub">% of total PA dollars</p><div class="chart h300"><canvas id="chPaMix"></canvas></div></div>
+        </div>
+        <div class="card"><h3>PA by disaster and category</h3><p class="sub">$ millions</p><div class="chart h300"><canvas id="chPaStack"></canvas></div></div>
+      </section>
+
+      <!-- 5. Individual Assistance -->
+      <section class="section" id="sec-ia">
+        <h2><span class="num">5</span>Individual Assistance (IA)</h2>
+        <div class="grid kpi-grid" id="iaKpis"></div>
+        <div class="grid g3">
+          <div class="card"><h3>Housing vs. other needs</h3><p class="sub">Share of IA dollars</p><div class="chart h240"><canvas id="chIaSplit"></canvas></div></div>
+          <div class="card span2"><h3>IA by assistance type</h3><p class="sub">All IA declarations, $ millions</p><div class="chart h240"><canvas id="chIaType"></canvas></div></div>
+        </div>
+        <div class="card"><h3>Registrations and approvals by disaster</h3><p class="sub">Households</p><div class="chart h240"><canvas id="chIaReg"></canvas></div></div>
+      </section>
+
+      <!-- 6. Other grants -->
+      <section class="section" id="sec-grants">
+        <h2><span class="num">6</span>Other emergency management grants</h2>
+        <div class="grid kpi-grid" id="grantKpis"></div>
+        <div class="grid g-2-1">
+          <div class="card"><h3>Awards by program</h3><p class="sub">$ millions</p><div class="chart h300"><canvas id="chGrantProg"></canvas></div></div>
+          <div class="card"><h3>By mission area</h3><p class="sub">Share of grant dollars</p><div class="chart h300"><canvas id="chGrantPhase"></canvas></div></div>
+        </div>
+        <div class="card table-card">
+          <h3>Grant awards</h3>
+          <div class="table-wrap"><table class="tbl" id="tblGrants"></table></div>
+        </div>
+      </section>
+
+      <!-- 7. Risk -->
+      <section class="section" id="sec-risk">
+        <h2><span class="num">7</span>Future risk index</h2>
+        <div class="grid kpi-grid" id="riskKpis"></div>
+        <div class="grid g2">
+          <div class="card"><h3>Hazard risk scores</h3><p class="sub">0–100, county vs. state</p><div class="chart h380"><canvas id="chRadar"></canvas></div></div>
+          <div class="card"><h3>Likelihood × impact</h3><p class="sub">Where each hazard falls for the county</p><div id="matrix" class="matrix"></div></div>
+        </div>
+        <div class="grid g2">
+          <div class="card"><h3>Expected annual loss by hazard</h3><p class="sub">$ thousands per year</p><div class="chart h420"><canvas id="chEal"></canvas></div></div>
+          <div class="card table-card"><h3>Hazard outlook</h3><div class="table-wrap"><table class="tbl" id="tblRisk"></table></div></div>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p><strong>About this profile.</strong> All figures are fictional and generated for demonstration. In a production version,
+        typical sources would be the U.S. Census Bureau ACS, CDC/ATSDR SVI, FEMA OpenFEMA (declarations, PA, IA, HMA), the FEMA National
+        Risk Index and HHS emPOWER.</p>
+        <p id="footStamp"></p>
+      </footer>
+    </main>
+  </div>
+
+  <div id="pdfOverlay" class="pdf-overlay" hidden><div class="spinner"></div><p>Building PDF…</p></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://js.arcgis.com/4.30/"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
